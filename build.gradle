@@ -1,0 +1,42 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.1.2-5'
+}
+
+ext {
+    kotlinVersion = '1.1.2-5'
+    awsLambdaVersion = '1.1.0'
+    jsoupVersion = '1.10.3'
+    gsonVersion = '2.8.1'
+    okhttpVersion = '3.8.0'
+    rxJavaVersion = '2.1.1'
+
+    mainClassName = 'io.devholic.epilogue.App'
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
+    compile "com.amazonaws:aws-lambda-java-core:$awsLambdaVersion"
+    compile "com.google.code.gson:gson:$gsonVersion"
+    compile "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    compile "org.jsoup:jsoup:$jsoupVersion"
+    compile "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+}
