@@ -2,14 +2,13 @@ package io.devholic.epilogue
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
-import io.devholic.epilogue.entity.Recipient
 import io.devholic.epilogue.enum.NaverNewsCategory
 import io.devholic.epilogue.repository.KATCRepository
 import io.devholic.epilogue.repository.MessageRepository
 import io.devholic.epilogue.repository.NaverNewsRepository
 import io.devholic.epilogue.repository.SlackRepository
 import io.reactivex.Single
-import io.reactivex.functions.Function3
+import io.reactivex.functions.BiFunction
 import java.io.InputStream
 
 
@@ -37,39 +36,43 @@ class App : RequestHandler<InputStream, Boolean> {
     )
 
     override fun handleRequest(input: InputStream, context: Context): Boolean {
-        Single.zip(
+        katcRepository.getRecipients(
+            System.getenv(recipientName),
+            System.getenv(recipientBirthday),
+            System.getenv(recipientEnterDate)
+        ).filter {
+            it.isNotEmpty()
+        }.flatMapSingle {
+            recipients ->
             Single.zip(
-                listOf(
-                    NaverNewsCategory.IT,
-                    NaverNewsCategory.ENTERTAINMENT,
-                    NaverNewsCategory.SOCIETY,
-                    NaverNewsCategory.WORLD,
-                    NaverNewsCategory.LIFE
-                ).map { naverNewsRepository.getHeadlineList(it) },
-                {
-                    it.map {
-                        @Suppress("UNCHECKED_CAST")
-                        it as List<String>
-                    }.fold(emptyList<String>(), { acc, result -> acc + result })
+                Single.zip(
+                    listOf(
+                        NaverNewsCategory.IT,
+                        NaverNewsCategory.ENTERTAINMENT,
+                        NaverNewsCategory.SOCIETY,
+                        NaverNewsCategory.WORLD,
+                        NaverNewsCategory.LIFE
+                    ).map { naverNewsRepository.getHeadlineList(it) },
+                    {
+                        it.map {
+                            @Suppress("UNCHECKED_CAST")
+                            it as List<String>
+                        }.fold(emptyList<String>(), { acc, result -> acc + result })
+                    }
+                ),
+                slackRepository.getWriterId(
+                    System.getenv(slackChannelId),
+                    System.getenv(slackUserId)
+                ),
+                BiFunction {
+                    newsList: List<String>, id: String ->
+                    Triple(recipients, newsList, id)
                 }
-            ),
-            katcRepository.getRecipients(
-                System.getenv(recipientName),
-                System.getenv(recipientBirthday),
-                System.getenv(recipientEnterDate)
-            ),
-            slackRepository.getWriterId(
-                System.getenv(slackChannelId),
-                System.getenv(slackUserId)
-            ),
-            Function3 {
-                newsList: List<String>, recipients: List<Recipient>, id: String ->
-                Triple(newsList, recipients, id)
-            }
-        ).flatMapCompletable {
+            )
+        }.flatMapCompletable {
             messageRepository.create(
-                it.second,
                 it.first,
+                it.second,
                 it.third
             ).flatMapCompletable {
                 slackRepository.send(it)
