@@ -18,10 +18,10 @@ class SlackRepository(
     private val webhookUrl: String
 ) {
 
-    fun getSenderId(
+    fun getWriterId(
         channelId: String,
         recipientUsername: String,
-        defaultSenderUsername: String = "slackbot"
+        defaultWriterUsername: String = "slackbot"
     ): Single<String> =
         Single.fromCallable {
             Network.client.newCall(
@@ -44,7 +44,7 @@ class SlackRepository(
                             .filter { it != recipientUsername }
                             .toMutableList()
                             .randomPick()
-                    } ?: defaultSenderUsername
+                    } ?: defaultWriterUsername
                 }
         }.retry(3)
 

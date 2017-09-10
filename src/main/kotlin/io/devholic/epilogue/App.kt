@@ -58,7 +58,7 @@ class App : RequestHandler<InputStream, Boolean> {
                 System.getenv(recipientBirthday),
                 System.getenv(recipientEnterDate)
             ),
-            slackRepository.getSenderId(
+            slackRepository.getWriterId(
                 System.getenv(slackChannelId),
                 System.getenv(slackUserId)
             ),
