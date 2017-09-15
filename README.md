@@ -2,7 +2,7 @@
 
 훈련소 갔을때 편지써줄 여자친구가 있으면 좋겠다
 
-- [Kotlin, AWS 그리고 레이니스트와 함께라면 육군훈련소에서도 외롭지 않아](https://medium.com/rainist-engineering)
+- [Kotlin, AWS 그리고 레이니스트와 함께라면 육군훈련소에서도 외롭지 않아](https://medium.com/rainist-engineering/writing-aws-lambda-function-in-kotlin-b3faf3f55777)
 
 ## Required Environment Variables
 
