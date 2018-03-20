@@ -16,14 +16,10 @@ class KATCRepository {
     private val recipientBirthDayEncodedKey = "search_val2" // Birthday (yyMMdd) > base64
     private val recipientBirthDayKey = "birthDay" // Birthday (yyMMdd)
     private val recipientNameKey = "search_val3" // Name
-    private val recipientIdIdx = 2
-    private val recipientRegimentIdx = 4
-    private val recipientCompanyIdx = 5
-    private val recipientPlatoonIdx = 6
+    private val recipientRegimentIdx = 1
+    private val recipientCompanyIdx = 2
+    private val recipientPlatoonIdx = 3
     private val recipientId = "[id^=childInfo]"
-    private val recipientFilterAttr = "onclick"
-    private val recipientRegex = "check\\((.*)\\);".toRegex()
-    private val recipientNormalizeRegex = "\\s|'".toRegex()
 
     fun getRecipients(name: String, birthday: String, enterDate: String): Single<List<Recipient>> =
         Single.fromCallable {
@@ -40,7 +36,7 @@ class KATCRepository {
                     ?.let {
                         Jsoup.parse(it)
                             .select(recipientId)
-                            .map { it.mapRecipient(name, birthday, enterDate) }
+                            .map { it.parent().parent().mapRecipient(name, birthday, enterDate) }
                             .filter { it != null }
                             .map { it!! }
                     } ?: emptyList<Recipient>()
@@ -56,24 +52,16 @@ class KATCRepository {
             .build()
 
     private fun Element.mapRecipient(name: String, birthday: String, enterDate: String): Recipient? =
-        recipientRegex.find(attr(recipientFilterAttr))
-            ?.takeIf { it.groups.size >= 2 }
+        select("td")
+            .takeIf { it.size == 7 }
             ?.let {
-                it.groups[1]!!.value
-                    .replace(recipientNormalizeRegex, "")
-                    .split(",")
-                    .let {
-                        if (it.size == 7) {
-                            Recipient(
-                                it[recipientIdIdx],
-                                birthday,
-                                enterDate,
-                                name,
-                                it[recipientRegimentIdx],
-                                it[recipientCompanyIdx],
-                                it[recipientPlatoonIdx]
-                            )
-                        } else null
-                    }
+                Recipient(
+                    birthday,
+                    enterDate,
+                    name,
+                    it[recipientRegimentIdx].text().trim(),
+                    it[recipientCompanyIdx].text().trim(),
+                    it[recipientPlatoonIdx].text().trim()
+                )
             }
 }
