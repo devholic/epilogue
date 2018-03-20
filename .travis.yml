@@ -3,5 +3,9 @@ language: java
 jdk:
   - oraclejdk8
 
+install:
+  - pip install --user awscli
+  - gradle jar
+
 after_success:
   - make upload
