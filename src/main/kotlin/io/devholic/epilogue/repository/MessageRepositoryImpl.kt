@@ -28,13 +28,13 @@ class MessageRepositoryImpl(slackUsername: String) : MessageRepository {
                     "편지는 http://www.katc.mil.kr 에서 쓰실 수 있어용 :doge:\n" +
                     if (recipients.size > 1) {
                         "아! 동명이인이 있사오니 확인하시고 써주시면 감사하겠습니당 (이 중에 한명이에용 :doge:)\n" +
-                            recipients
-                                .map { formatRecipient(it) }
-                                .joinToString(separator = "\n")
-                    } else recipients.first().let { formatRecipient(it) } +
-                        "\n감사합니당!\n" +
-                        "(쓸 내용이 없으시다면 아래 뉴스라도 보내주시면 감사하겠읍니다... :pepe-dance:)\n" +
-                        "```\n${newsList.joinToString(separator = " /")}\n```"
+                            recipients.joinToString(separator = "\n") { formatRecipient(it) }
+                    } else {
+                        recipients.first().let { formatRecipient(it) } +
+                            "\n감사합니당!\n" +
+                            "(쓸 내용이 없으시다면 아래 뉴스라도 보내주시면 감사하겠읍니다... :pepe-dance:)\n" +
+                            "```\n${newsList.joinToString(separator = " /")}\n```"
+                    }
             )
         }
 

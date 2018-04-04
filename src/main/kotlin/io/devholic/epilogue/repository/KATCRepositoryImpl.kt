@@ -41,10 +41,17 @@ class KATCRepositoryImpl : KATCRepository {
                     ?.let {
                         Jsoup.parse(it)
                             .select(recipientId)
-                            .map { it.parent().parent().mapRecipient(name, birthday, enterDate) }
-                            .filter { it != null }
-                            .map { it!! }
-                    } ?: emptyList<Recipient>()
+                            .fold(
+                                emptyList<Recipient>(),
+                                { acc, r ->
+                                    r.parent().parent()
+                                        .mapRecipient(name, birthday, enterDate)
+                                        ?.let {
+                                            acc + it
+                                        } ?: acc
+                                }
+                            )
+                    } ?: emptyList()
             }
         }.retry(3)
 

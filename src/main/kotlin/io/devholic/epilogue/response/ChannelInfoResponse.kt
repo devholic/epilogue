@@ -10,5 +10,4 @@ data class ChannelInfoResponse(
     val channel: ChannelResponse
 )
 
-fun ChannelInfoResponse.toEntity(): ChannelInfo =
-    ChannelInfo(channel.toEntity())
+fun ChannelInfoResponse.toEntity(): ChannelInfo = ChannelInfo(channel.toEntity())
