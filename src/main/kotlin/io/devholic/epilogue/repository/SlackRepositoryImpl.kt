@@ -19,6 +19,10 @@ class SlackRepositoryImpl(
     private val webhookUrl: String
 ) : SlackRepository {
 
+    private val slackChannelApiUrl = "https://slack.com/api/channels.info"
+    private val tokenKey = "token"
+    private val channelKey = "token"
+
     override fun getWriterId(
         channelId: String,
         recipientUsername: String,
@@ -27,11 +31,11 @@ class SlackRepositoryImpl(
         Single.fromCallable {
             Network.client.newCall(
                 Request.Builder()
-                    .url("https://slack.com/api/channels.info")
+                    .url(slackChannelApiUrl)
                     .post(
                         FormBody.Builder()
-                            .add("token", accessToken)
-                            .add("channel", channelId)
+                            .add(tokenKey, accessToken)
+                            .add(channelKey, channelId)
                             .build()
                     )
                     .build()

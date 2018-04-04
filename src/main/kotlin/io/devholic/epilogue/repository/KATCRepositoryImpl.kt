@@ -3,6 +3,7 @@ package io.devholic.epilogue.repository
 import io.devholic.epilogue.Network
 import io.devholic.epilogue.domain.KATCRepository
 import io.devholic.epilogue.entity.Recipient
+import io.devholic.epilogue.enum.HtmlElement
 import io.devholic.epilogue.extension.toBase64
 import io.reactivex.Single
 import okhttp3.FormBody
@@ -13,6 +14,7 @@ import org.jsoup.nodes.Element
 
 class KATCRepositoryImpl : KATCRepository {
 
+    private val recipientQueryUrl = "http://www.katc.mil.kr/katc/community/children.jsp"
     private val recipientEnterDateKey = "search_val1" // Enter date (yyyyMMdd) > base64
     private val recipientBirthDayEncodedKey = "search_val2" // Birthday (yyMMdd) > base64
     private val recipientBirthDayKey = "birthDay" // Birthday (yyMMdd)
@@ -22,12 +24,14 @@ class KATCRepositoryImpl : KATCRepository {
     private val recipientPlatoonIdx = 3
     private val recipientId = "[id^=childInfo]"
 
+    private val requiredCellSize = 7
+
     override fun getRecipients(name: String, birthday: String, enterDate: String): Single<List<Recipient>> =
         Single.fromCallable {
             Network.client
                 .newCall(
                     Request.Builder()
-                        .url("http://www.katc.mil.kr/katc/community/children.jsp")
+                        .url(recipientQueryUrl)
                         .post(buildRecipientQuery(name, birthday, enterDate))
                         .build()
                 ).execute()
@@ -53,8 +57,8 @@ class KATCRepositoryImpl : KATCRepository {
             .build()
 
     private fun Element.mapRecipient(name: String, birthday: String, enterDate: String): Recipient? =
-        select("td")
-            .takeIf { it.size == 7 }
+        select(HtmlElement.TD.value)
+            .takeIf { it.size == requiredCellSize }
             ?.let {
                 Recipient(
                     birthday,
