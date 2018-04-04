@@ -3,7 +3,7 @@ package io.devholic.epilogue.repository
 import io.devholic.epilogue.domain.MessageRepository
 import io.devholic.epilogue.entity.Recipient
 import io.devholic.epilogue.entity.SlackMessage
-import io.devholic.epilogue.extension.randomPick
+import io.devholic.epilogue.extension.randomlyPick
 import io.reactivex.Single
 
 
@@ -22,7 +22,7 @@ class MessageRepositoryImpl(slackUsername: String) : MessageRepository {
     override fun create(recipients: List<Recipient>, newsList: List<String>, winner: String): Single<SlackMessage> =
         Single.fromCallable {
             SlackMessage(
-                "${contentPrefixes.randomPick()}\n" +
+                "${contentPrefixes.randomlyPick()}\n" +
                     "<@$winner>님이 편지 써주면 얼마나 좋을까 :pepe-sad2:\n" +
                     "(솔직히 겜블보다 이게 더 짜릿하지 않나용 :pepe:)\n" +
                     "편지는 http://www.katc.mil.kr 에서 쓰실 수 있어용 :doge:\n" +

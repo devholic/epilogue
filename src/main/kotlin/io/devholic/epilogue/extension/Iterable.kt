@@ -3,7 +3,7 @@ package io.devholic.epilogue.extension
 import java.util.*
 
 
-fun <T : Any> List<T>.randomPick(): T? =
+fun <T : Any> List<T>.randomlyPick(): T? =
     Random(System.currentTimeMillis())
         .nextInt(size)
         .let {

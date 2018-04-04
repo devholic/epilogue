@@ -3,7 +3,7 @@ package io.devholic.epilogue.repository
 import io.devholic.epilogue.Network
 import io.devholic.epilogue.domain.SlackRepository
 import io.devholic.epilogue.entity.SlackMessage
-import io.devholic.epilogue.extension.randomPick
+import io.devholic.epilogue.extension.randomlyPick
 import io.devholic.epilogue.request.SlackMessageRequest
 import io.devholic.epilogue.response.ChannelInfoResponse
 import io.devholic.epilogue.response.toEntity
@@ -44,7 +44,7 @@ class SlackRepositoryImpl(
                             .members
                             .filter { it != recipientUsername }
                             .toMutableList()
-                            .randomPick()
+                            .randomlyPick()
                     } ?: defaultWriterUsername
                 }
         }.retry(3)
