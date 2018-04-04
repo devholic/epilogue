@@ -2,11 +2,15 @@ package io.devholic.epilogue
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
+import io.devholic.epilogue.domain.KATCRepository
+import io.devholic.epilogue.domain.MessageRepository
+import io.devholic.epilogue.domain.NaverNewsRepository
+import io.devholic.epilogue.domain.SlackRepository
 import io.devholic.epilogue.enum.NaverNewsCategory
-import io.devholic.epilogue.repository.KATCRepository
-import io.devholic.epilogue.repository.MessageRepository
-import io.devholic.epilogue.repository.NaverNewsRepository
-import io.devholic.epilogue.repository.SlackRepository
+import io.devholic.epilogue.repository.KATCRepositoryImpl
+import io.devholic.epilogue.repository.MessageRepositoryImpl
+import io.devholic.epilogue.repository.NaverNewsRepositoryImpl
+import io.devholic.epilogue.repository.SlackRepositoryImpl
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import java.io.InputStream
@@ -25,15 +29,16 @@ class App : RequestHandler<InputStream, Boolean> {
         const val recipientEnterDate = "RECIPIENT_ENTERDATE"
     }
 
-    private val katcRepository = KATCRepository()
-    private val messageRepository = MessageRepository(
-        System.getenv(slackUsername)
-    )
-    private val naverNewsRepository = NaverNewsRepository()
-    private val slackRepository = SlackRepository(
-        System.getenv(slackAccessToken),
-        System.getenv(slackWebhookUrl)
-    )
+    private val katcRepository: KATCRepository = KATCRepositoryImpl()
+    private val messageRepository: MessageRepository =
+        MessageRepositoryImpl(System.getenv(slackUsername))
+    private val naverNewsRepository: NaverNewsRepository =
+        NaverNewsRepositoryImpl()
+    private val slackRepository: SlackRepository =
+        SlackRepositoryImpl(System.getenv(slackAccessToken), System.getenv(slackWebhookUrl))
+
+    private val defaultHeadlineLimit: Int = 10
+    private val defaultWriterUsername: String = "slackbot"
 
     override fun handleRequest(input: InputStream, context: Context): Boolean {
         katcRepository.getRecipients(
@@ -42,8 +47,7 @@ class App : RequestHandler<InputStream, Boolean> {
             System.getenv(recipientEnterDate)
         ).filter {
             it.isNotEmpty()
-        }.flatMapSingle {
-            recipients ->
+        }.flatMapSingle { recipients ->
             Single.zip(
                 Single.zip(
                     listOf(
@@ -52,7 +56,7 @@ class App : RequestHandler<InputStream, Boolean> {
                         NaverNewsCategory.SOCIETY,
                         NaverNewsCategory.WORLD,
                         NaverNewsCategory.LIFE
-                    ).map { naverNewsRepository.getHeadlineList(it) },
+                    ).map { naverNewsRepository.getHeadlineList(it, defaultHeadlineLimit) },
                     {
                         it.map {
                             @Suppress("UNCHECKED_CAST")
@@ -62,10 +66,10 @@ class App : RequestHandler<InputStream, Boolean> {
                 ),
                 slackRepository.getWriterId(
                     System.getenv(slackChannelId),
-                    System.getenv(slackUserId)
-                ),
-                BiFunction {
-                    newsList: List<String>, id: String ->
+                    System.getenv(slackUserId),
+                    defaultWriterUsername
+                    ),
+                BiFunction { newsList: List<String>, id: String ->
                     Triple(recipients, newsList, id)
                 }
             )
@@ -75,7 +79,7 @@ class App : RequestHandler<InputStream, Boolean> {
                 it.second,
                 it.third
             ).flatMapCompletable {
-                slackRepository.send(it)
+                slackRepository.sendMessage(it)
             }
         }.blockingGet()
         return true

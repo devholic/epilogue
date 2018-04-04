@@ -1,6 +1,7 @@
 package io.devholic.epilogue.repository
 
 import io.devholic.epilogue.Network
+import io.devholic.epilogue.domain.KATCRepository
 import io.devholic.epilogue.entity.Recipient
 import io.devholic.epilogue.extension.toBase64
 import io.reactivex.Single
@@ -10,7 +11,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 
-class KATCRepository {
+class KATCRepositoryImpl : KATCRepository {
 
     private val recipientEnterDateKey = "search_val1" // Enter date (yyyyMMdd) > base64
     private val recipientBirthDayEncodedKey = "search_val2" // Birthday (yyMMdd) > base64
@@ -21,7 +22,7 @@ class KATCRepository {
     private val recipientPlatoonIdx = 3
     private val recipientId = "[id^=childInfo]"
 
-    fun getRecipients(name: String, birthday: String, enterDate: String): Single<List<Recipient>> =
+    override fun getRecipients(name: String, birthday: String, enterDate: String): Single<List<Recipient>> =
         Single.fromCallable {
             Network.client
                 .newCall(

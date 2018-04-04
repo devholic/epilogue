@@ -1,6 +1,7 @@
 package io.devholic.epilogue.repository
 
 import io.devholic.epilogue.Network
+import io.devholic.epilogue.domain.NaverNewsRepository
 import io.devholic.epilogue.enum.NaverNewsCategory
 import io.devholic.epilogue.extension.toFormattedString
 import io.reactivex.Single
@@ -9,12 +10,12 @@ import org.jsoup.Jsoup
 import java.util.*
 
 
-class NaverNewsRepository {
+class NaverNewsRepositoryImpl : NaverNewsRepository {
 
     private val rankingUrl = "http://m.news.naver.com/rankingList.nhn?sid1=%d&date=%s"
     private val headlineClassname = ".commonlist_tx_headline"
 
-    fun getHeadlineList(category: NaverNewsCategory, limit: Int = 10): Single<List<String>> =
+    override fun getHeadlineList(category: NaverNewsCategory, limit: Int): Single<List<String>> =
         Single.fromCallable {
             Network.client
                 .newCall(

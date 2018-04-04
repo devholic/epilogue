@@ -1,6 +1,7 @@
 package io.devholic.epilogue.repository
 
 import io.devholic.epilogue.Network
+import io.devholic.epilogue.domain.SlackRepository
 import io.devholic.epilogue.entity.SlackMessage
 import io.devholic.epilogue.extension.randomPick
 import io.devholic.epilogue.request.SlackMessageRequest
@@ -13,15 +14,15 @@ import okhttp3.Request
 import okhttp3.RequestBody
 
 
-class SlackRepository(
+class SlackRepositoryImpl(
     private val accessToken: String,
     private val webhookUrl: String
-) {
+) : SlackRepository {
 
-    fun getWriterId(
+    override fun getWriterId(
         channelId: String,
         recipientUsername: String,
-        defaultWriterUsername: String = "slackbot"
+        defaultWriterUsername: String
     ): Single<String> =
         Single.fromCallable {
             Network.client.newCall(
@@ -48,7 +49,7 @@ class SlackRepository(
                 }
         }.retry(3)
 
-    fun send(message: SlackMessage): Completable =
+    override fun sendMessage(message: SlackMessage): Completable =
         Completable.fromCallable {
             Network.client.newCall(
                 Request.Builder()

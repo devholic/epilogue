@@ -1,12 +1,13 @@
 package io.devholic.epilogue.repository
 
+import io.devholic.epilogue.domain.MessageRepository
 import io.devholic.epilogue.entity.Recipient
 import io.devholic.epilogue.entity.SlackMessage
 import io.devholic.epilogue.extension.randomPick
 import io.reactivex.Single
 
 
-class MessageRepository(slackUsername: String) {
+class MessageRepositoryImpl(slackUsername: String) : MessageRepository {
 
     private val contentPrefixes: List<String> =
         listOf(
@@ -18,11 +19,7 @@ class MessageRepository(slackUsername: String) {
             "레하~ (레이니스트 하이라는 뜻) :doge:"
         )
 
-    fun create(
-        recipients: List<Recipient>,
-        newsList: List<String>,
-        winner: String
-    ): Single<SlackMessage> =
+    override fun create(recipients: List<Recipient>, newsList: List<String>, winner: String): Single<SlackMessage> =
         Single.fromCallable {
             SlackMessage(
                 "${contentPrefixes.randomPick()}\n" +
