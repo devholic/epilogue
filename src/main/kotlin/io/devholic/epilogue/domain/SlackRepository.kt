@@ -7,6 +7,6 @@ import io.reactivex.Single
 
 interface SlackRepository {
 
-    fun getWriterId(channelId: String, recipientUsername: String, defaultWriterUsername: String): Single<String>
+    fun getWriterId(channelId: String, recipientId: String, defaultWriterId: String): Single<String>
     fun sendMessage(message: SlackMessage): Completable
 }

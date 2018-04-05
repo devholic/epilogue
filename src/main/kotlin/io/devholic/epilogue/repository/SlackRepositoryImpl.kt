@@ -21,12 +21,12 @@ class SlackRepositoryImpl(
 
     private val slackChannelApiUrl = "https://slack.com/api/channels.info"
     private val tokenKey = "token"
-    private val channelKey = "token"
+    private val channelKey = "channel"
 
     override fun getWriterId(
         channelId: String,
-        recipientUsername: String,
-        defaultWriterUsername: String
+        recipientId: String,
+        defaultWriterId: String
     ): Single<String> =
         Single.fromCallable {
             Network.client.newCall(
@@ -46,10 +46,10 @@ class SlackRepositoryImpl(
                             .toEntity()
                             .channel
                             .members
-                            .filter { it != recipientUsername }
+                            .filter { it != recipientId }
                             .toMutableList()
                             .randomlyPick()
-                    } ?: defaultWriterUsername
+                    } ?: defaultWriterId
                 }
         }.retry(3)
 

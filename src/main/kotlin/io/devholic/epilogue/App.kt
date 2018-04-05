@@ -43,7 +43,7 @@ class App(
     }
 
     private val defaultHeadlineLimit: Int = 10
-    private val defaultWriterUsername: String = "slackbot"
+    private val defaultWriterId: String = ""
 
     override fun handleRequest(input: InputStream, context: Context): Unit {
         val result: Throwable? =
@@ -74,7 +74,7 @@ class App(
                         .getWriterId(
                             System.getenv(slackChannelId),
                             System.getenv(slackUserId),
-                            defaultWriterUsername
+                            defaultWriterId
                         ),
                     BiFunction { newsList: List<String>, id: String ->
                         Triple(recipients, newsList, id)
