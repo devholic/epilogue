@@ -17,7 +17,19 @@ import java.io.InputStream
 import java.time.LocalDate
 
 
-class App : RequestHandler<InputStream, Boolean> {
+class App(
+    private val katcRepository: KATCRepository =
+        KATCRepositoryImpl(),
+    private val messageRepository: MessageRepository =
+        MessageRepositoryImpl(System.getenv(slackUsername)),
+    private val naverNewsRepository: NaverNewsRepository =
+        NaverNewsRepositoryImpl(),
+    private val slackRepository: SlackRepository =
+        SlackRepositoryImpl(
+            System.getenv(slackAccessToken),
+            System.getenv(slackWebhookUrl)
+        )
+) : RequestHandler<InputStream, Unit> {
 
     companion object {
         const val slackAccessToken = "SLACK_ACCESS_TOKEN"
@@ -30,59 +42,53 @@ class App : RequestHandler<InputStream, Boolean> {
         const val recipientEnterDate = "RECIPIENT_ENTERDATE"
     }
 
-    private val katcRepository: KATCRepository = KATCRepositoryImpl()
-    private val messageRepository: MessageRepository =
-        MessageRepositoryImpl(System.getenv(slackUsername))
-    private val naverNewsRepository: NaverNewsRepository =
-        NaverNewsRepositoryImpl()
-    private val slackRepository: SlackRepository =
-        SlackRepositoryImpl(System.getenv(slackAccessToken), System.getenv(slackWebhookUrl))
-
     private val defaultHeadlineLimit: Int = 10
     private val defaultWriterUsername: String = "slackbot"
 
-    override fun handleRequest(input: InputStream, context: Context): Boolean {
-        katcRepository.getRecipients(
-            System.getenv(recipientName),
-            LocalDate.parse(System.getenv(recipientBirthday)),
-            LocalDate.parse(System.getenv(recipientEnterDate))
-        ).filter {
-            it.isNotEmpty()
-        }.flatMapSingle { recipients ->
-            Single.zip(
+    override fun handleRequest(input: InputStream, context: Context): Unit {
+        val result: Throwable? =
+            katcRepository.getRecipients(
+                System.getenv(recipientName),
+                LocalDate.parse(System.getenv(recipientBirthday)),
+                LocalDate.parse(System.getenv(recipientEnterDate))
+            ).filter {
+                it.isNotEmpty()
+            }.flatMapSingle { recipients ->
                 Single.zip(
-                    listOf(
-                        NaverNewsCategory.IT,
-                        NaverNewsCategory.ENTERTAINMENT,
-                        NaverNewsCategory.SOCIETY,
-                        NaverNewsCategory.WORLD,
-                        NaverNewsCategory.LIFE
-                    ).map { naverNewsRepository.getHeadlineList(it, defaultHeadlineLimit) },
-                    {
-                        it.map {
-                            @Suppress("UNCHECKED_CAST")
-                            it as List<String>
-                        }.fold(emptyList<String>(), { acc, result -> acc + result })
-                    }
-                ),
-                slackRepository.getWriterId(
-                    System.getenv(slackChannelId),
-                    System.getenv(slackUserId),
-                    defaultWriterUsername
+                    Single.zip(
+                        listOf(
+                            NaverNewsCategory.IT,
+                            NaverNewsCategory.ENTERTAINMENT,
+                            NaverNewsCategory.SOCIETY,
+                            NaverNewsCategory.WORLD,
+                            NaverNewsCategory.LIFE
+                        ).map { naverNewsRepository.getHeadlineList(it, defaultHeadlineLimit) },
+                        {
+                            it.map {
+                                @Suppress("UNCHECKED_CAST")
+                                it as List<String>
+                            }.fold(emptyList<String>(), { acc, result -> acc + result })
+                        }
                     ),
-                BiFunction { newsList: List<String>, id: String ->
-                    Triple(recipients, newsList, id)
+                    slackRepository
+                        .getWriterId(
+                            System.getenv(slackChannelId),
+                            System.getenv(slackUserId),
+                            defaultWriterUsername
+                        ),
+                    BiFunction { newsList: List<String>, id: String ->
+                        Triple(recipients, newsList, id)
+                    }
+                )
+            }.flatMapCompletable {
+                messageRepository.create(
+                    it.first,
+                    it.second,
+                    it.third
+                ).flatMapCompletable {
+                    slackRepository.sendMessage(it)
                 }
-            )
-        }.flatMapCompletable {
-            messageRepository.create(
-                it.first,
-                it.second,
-                it.third
-            ).flatMapCompletable {
-                slackRepository.sendMessage(it)
-            }
-        }.blockingGet()
-        return true
+            }.blockingGet()
+        result?.let { throw(it) }
     }
 }
