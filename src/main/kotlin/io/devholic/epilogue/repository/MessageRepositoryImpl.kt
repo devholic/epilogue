@@ -40,5 +40,5 @@ class MessageRepositoryImpl(slackUsername: String) : MessageRepository {
 
     private fun formatRecipient(recipient: Recipient): String =
         "> 생년월일 ${recipient.birthday} 입영일 ${recipient.enterDate} / " +
-            "${recipient.regiment} 연대 ${recipient.company} 중대 ${recipient.platoon} 소대"
+            "${recipient.regiment}연대 ${recipient.company}중대 ${recipient.platoon}소대"
 }

@@ -16,8 +16,8 @@ SLACK_WEBHOOK_URL | Webhook URL
 SLACK_USER_ID | 본인의 Slack User ID
 SLACK_USERNAME | 본인의 Slack Username
 RECIPIENT_NAME | 본인의 이름 (**실명**)
-RECIPIENT_BIRTHDAY | 본인의 주민등록상 생년월일 (**yyMMdd**)
-RECIPIENT_ENTERDATE | 본인의 입대일 (**yyyyMMdd**)
+RECIPIENT_BIRTHDAY | 본인의 주민등록상 생년월일 (**yyyy-MM-dd**)
+RECIPIENT_ENTERDATE | 본인의 입대일 (**yyyy-MM-dd**)
 
 ## License
 

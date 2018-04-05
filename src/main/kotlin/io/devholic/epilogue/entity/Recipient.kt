@@ -1,11 +1,13 @@
 package io.devholic.epilogue.entity
 
+import java.time.LocalDate
+
 
 data class Recipient(
-    val birthday: String,
-    val enterDate: String,
+    val birthday: LocalDate,
+    val enterDate: LocalDate,
     val name: String,
-    val regiment: String,
-    val company: String,
-    val platoon: String
+    val regiment: Int,
+    val company: Int,
+    val platoon: Int
 )

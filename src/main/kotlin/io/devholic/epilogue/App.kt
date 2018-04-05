@@ -14,6 +14,7 @@ import io.devholic.epilogue.repository.SlackRepositoryImpl
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import java.io.InputStream
+import java.time.LocalDate
 
 
 class App : RequestHandler<InputStream, Boolean> {
@@ -43,8 +44,8 @@ class App : RequestHandler<InputStream, Boolean> {
     override fun handleRequest(input: InputStream, context: Context): Boolean {
         katcRepository.getRecipients(
             System.getenv(recipientName),
-            System.getenv(recipientBirthday),
-            System.getenv(recipientEnterDate)
+            LocalDate.parse(System.getenv(recipientBirthday)),
+            LocalDate.parse(System.getenv(recipientEnterDate))
         ).filter {
             it.isNotEmpty()
         }.flatMapSingle { recipients ->
