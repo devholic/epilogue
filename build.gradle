@@ -10,7 +10,7 @@ ext {
     okhttpVersion = '3.8.0'
     rxJavaVersion = '2.1.1'
 
-    mainClassName = 'io.devholic.epilogue.App'
+    mainClassName = 'io.devholic.epilogue.SendRecipientDataIfExists'
 }
 
 sourceSets {
